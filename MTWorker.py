@@ -90,9 +90,9 @@ class Worker(threading.Thread):
                 #If available, get handle for method and call with passed args
                 getattr(self.devicecomm,taskType)(*taskArgs)
                 self.sendStatusUpdate()
-            elif taskType == "METHODSAVAILABLE":
-                getattr(self.devicecomm,taskType)(*taskArgs)
-                self.sendStatusUpdate(getattr(self.devicecomm,taskType)(*taskArgs))
+                if taskType == "METHODSAVAILABLE":
+                    self.sendStatusUpdate(getattr(self.devicecomm,taskType)(*taskArgs), "METHODS")
+                   
             elif taskType == 'PUPDATE':
                 print "STATUS " + str(time.time()) + " "+str(self.devicecomm.internal_state)
             else:
@@ -108,15 +108,15 @@ class Worker(threading.Thread):
     #
     # Each message should be of the form:
     # STATUS <ARG1> <ARG2> ...
-    def sendStatusUpdate(self,DATA = None):
+    def sendStatusUpdate(self,DATA = None,HEADER = None):
         ### Define the arguments to send ########
         
         #########################################
 
-        if DATA == None:
+        if DATA == None && HEADER == None:
             message = "STATUS " + str(time.time()) + " "+str(self.devicecomm.internal_state)
         else:
-            message = "DATA " + str(time.time()) + " "+ str(DATA)
+            message = str(HEADER)+" " + str(time.time()) + " "+ str(DATA)
         self.server.broadcastMessage(message)
 
 

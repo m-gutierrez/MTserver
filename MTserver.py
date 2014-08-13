@@ -153,6 +153,8 @@ class Server:
                     elif text == 'STATUS':
                         print "Server running on ip: %s port: %s"%(self.host,str(self.port))
                         print "Current number of connected clients: " + str(len(self.threads))
+                        for i in self.threads:
+                            print '\tClient: %s @%s:%i\n'%(socket.gethostbyaddr(i.address[0])[0],i.address[0],i.address[1])
                     elif text == 'DEVICESTATUS':
                         print "Current Device state: "
                         self.worker.acceptTask('PUPDATE')

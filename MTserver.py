@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 '''
     Written by: Michael Turek 2014-04-01
     Updated: MG 2014-07-20

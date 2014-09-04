@@ -59,7 +59,7 @@ class Worker(threading.Thread):
         self.devicecomm = importlib.import_module('%sComm'%(workerName)).Comm()
         self.availablecommands = dir(self.devicecomm)
         
-        self.DEFAULT_UPDATE_INTERVAL = 5 # in sec
+        self.DEFAULT_UPDATE_INTERVAL = 0.5 # in sec
 
         ######################################
 
@@ -92,9 +92,12 @@ class Worker(threading.Thread):
                 self.sendStatusUpdate()
                 if taskType == "METHODSAVAILABLE":
                     self.sendStatusUpdate(getattr(self.devicecomm,taskType)(*taskArgs), "METHODS")
+                 
                    
             elif taskType == 'PUPDATE':
                 print "STATUS " + str(time.time()) + " "+str(self.devicecomm.internal_state)
+            elif taskType.startswith("PLOT"): #plots have unique IDs embedded in header
+                self.sendStatusUpdate(self.devicecomm.internal_state, taskType)
             else:
                 print "Task not recognized: (" + task + ")"
                 print "taskType: ("+taskType+")"
@@ -113,7 +116,7 @@ class Worker(threading.Thread):
         
         #########################################
 
-        if DATA == None && HEADER == None:
+        if DATA == None and HEADER == None:
             message = "STATUS " + str(time.time()) + " "+str(self.devicecomm.internal_state)
         else:
             message = str(HEADER)+" " + str(time.time()) + " "+ str(DATA)

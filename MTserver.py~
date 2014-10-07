@@ -63,11 +63,14 @@ class Server:
             print "Server accepting connections on %s ip:%s port: %s"%(self.hostname,self.host,str(self.port))
 
         except socket.error, (value,message):
-            if self.server:
-                self.server.close()
-
+            
             print "ERROR: Could not open socket: " + message
-            sys.exit(1)
+            self.port=self.port+1
+            self.openSocket()
+            if self.port > 12500:
+                if self.server:
+                    self.server.close()
+                sys.exit(1)
 
     def getWorker(self):
         return self.worker

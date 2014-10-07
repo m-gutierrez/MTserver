@@ -59,7 +59,7 @@ class Worker(threading.Thread):
         self.devicecomm = importlib.import_module('%sComm'%(workerName)).Comm()
         self.availablecommands = dir(self.devicecomm)
         
-        self.DEFAULT_UPDATE_INTERVAL = 0.1 # in sec
+        self.DEFAULT_UPDATE_INTERVAL = 1 # in sec
 
         ######################################
 
@@ -90,9 +90,13 @@ class Worker(threading.Thread):
                 #If available, get handle for method and call with passed args
                 getattr(self.devicecomm,taskType)(*taskArgs)
                 self.sendStatusUpdate()
-                if taskType == "METHODSAVAILABLE":
-                    self.sendStatusUpdate(getattr(self.devicecomm,taskType)(*taskArgs), "METHODS")
-                 
+            elif taskType == "METHODSAVAILABLE":
+                self.sendStatusUpdate(getattr(self.devicecomm,taskType)(*taskArgs), "METHODS")
+            elif taskType == "UPDATEINTERVAL":
+                try:          
+                    self.updater.changeTimeInterval(float(taskArgs[0]))
+                except Exception as e:
+                    print 'Error when changing update interval: ', e
                    
             elif taskType == 'PUPDATE':
                 print "STATUS " + str(time.time()) + " "+str(self.devicecomm.internal_state)

@@ -83,7 +83,6 @@ class Worker(threading.Thread):
         taskArray = task.split(" ")
         taskType = taskArray[0]
         taskArgs = taskArray[1:]
-        print taskArray
         
         try:
             if taskType in self.availablecommands or taskType == "":

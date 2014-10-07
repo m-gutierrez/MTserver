@@ -238,7 +238,6 @@ class ClientThread(threading.Thread):
     # See http://stackoverflow.com/questions/17667903/python-socket-receive-large-amount-of-data 
     def sendMessage(self, msg):
         try:
-            print "msglen=%d"%(len(msg))
             msg = struct.pack('>I', len(msg)) + msg
             self.client.sendall(msg)
 

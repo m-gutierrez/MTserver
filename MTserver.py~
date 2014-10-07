@@ -21,6 +21,7 @@ import time
 import errno
 import string
 import argparse
+import struct
 
 DEBUG = False
 
@@ -63,7 +64,6 @@ class Server:
             print "Server accepting connections on %s ip:%s port: %s"%(self.hostname,self.host,str(self.port))
 
         except socket.error, (value,message):
-            
             print "ERROR: Could not open socket: " + message
             self.port=self.port+1
             self.openSocket()
@@ -234,9 +234,11 @@ class ClientThread(threading.Thread):
                 self.kill()
     
     # Send a given message to the client socket    
-    def sendMessage(self, message):
+    def sendMessage(self, msg):
         try:
-            self.client.send(message)
+            print "msglen=%d"%(len(msg))
+            msg = struct.pack('>I', len(msg)) + msg
+            self.client.sendall(msg)
 
         except socket.error, e:
             print "ERROR: Socket invalidated while sending"

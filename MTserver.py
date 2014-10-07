@@ -21,6 +21,7 @@ import time
 import errno
 import string
 import argparse
+import struct
 
 DEBUG = False
 
@@ -232,10 +233,14 @@ class ClientThread(threading.Thread):
                 self.debugMsg("recv returned null: connection interrupted")
                 self.kill()
     
-    # Send a given message to the client socket    
-    def sendMessage(self, message):
+    # Send a given message to the client socket   
+    # Prefixed with message length for unpacking
+    # See http://stackoverflow.com/questions/17667903/python-socket-receive-large-amount-of-data 
+    def sendMessage(self, msg):
         try:
-            self.client.send(message)
+            print "msglen=%d"%(len(msg))
+            msg = struct.pack('>I', len(msg)) + msg
+            self.client.sendall(msg)
 
         except socket.error, e:
             print "ERROR: Socket invalidated while sending"

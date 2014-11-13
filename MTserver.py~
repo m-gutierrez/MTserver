@@ -224,10 +224,11 @@ class ClientThread(threading.Thread):
 
                 # Remove new line at the end of the message
                 data = data.rstrip("\n\r")
-
+                dataArray = data.split('\n')
                 # TODO: add a filter for server-side tasks
                 # TODO: handle the DISCONNECT message
-                self.server.getWorker().acceptTask(data)
+                for i in dataArray:
+                    self.server.getWorker().acceptTask(i)
 
             else:
                 self.debugMsg("recv returned null: connection interrupted")
@@ -238,7 +239,6 @@ class ClientThread(threading.Thread):
     # See http://stackoverflow.com/questions/17667903/python-socket-receive-large-amount-of-data 
     def sendMessage(self, msg):
         try:
-            print "msglen=%d"%(len(msg))
             msg = struct.pack('>I', len(msg)) + msg
             self.client.sendall(msg)
 

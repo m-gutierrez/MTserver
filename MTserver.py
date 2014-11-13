@@ -224,10 +224,11 @@ class ClientThread(threading.Thread):
 
                 # Remove new line at the end of the message
                 data = data.rstrip("\n\r")
-
+                dataArray = data.split('\n')
                 # TODO: add a filter for server-side tasks
                 # TODO: handle the DISCONNECT message
-                self.server.getWorker().acceptTask(data)
+                for i in dataArray:
+                    self.server.getWorker().acceptTask(i)
 
             else:
                 self.debugMsg("recv returned null: connection interrupted")

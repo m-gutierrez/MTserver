@@ -83,7 +83,7 @@ class Worker(threading.Thread):
         taskArray = task.split(" ")
         taskType = taskArray[0]
         taskArgs = taskArray[1:]
-        print taskArray
+
         try:
             if taskType in self.availablecommands or taskType == "":
                 #Check if task is available in comm class
@@ -101,6 +101,7 @@ class Worker(threading.Thread):
             elif taskType == 'PUPDATE':
                 print "STATUS " + str(time.time()) + " "+str(self.devicecomm.internal_state)
             elif taskType.startswith("PLOT"): #plots have unique IDs embedded in header
+                self.devicecomm.UPDATE()
                 self.sendStatusUpdate(self.devicecomm.internal_state, taskType)
             else:
                 print "Task not recognized: (" + task + ")"

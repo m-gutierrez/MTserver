@@ -112,7 +112,7 @@ class Worker(threading.Thread):
                     specialtasks = specstring.split(';')
                     reqData = {}
                     for req in specialtasks:
-                        reqArray = paramreq.split(" ")
+                        reqArray = req.split(" ")
                         reqType = reqArray[0]
                         reqArgs = reqArray[1:]
                         reqData[reqType] = getattr(self.devicecomm,reqType)(*reqArgs)

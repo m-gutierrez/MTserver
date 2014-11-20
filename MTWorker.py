@@ -103,6 +103,23 @@ class Worker(threading.Thread):
             elif taskType.startswith("PLOT"): #plots have unique IDs embedded in header
                 self.devicecomm.UPDATE()
                 self.sendStatusUpdate(self.devicecomm.internal_state, taskType)
+            elif taskType.startswith("SPECIALREQUEST"): 
+                #Requests specific data from the worker
+                #Format SPECIALREQUEST UPDATE;READ;OVEN 1.1;CURRLIM 5.1
+                #etc..
+                try:
+                    specstring = "".join(taskArgs)
+                    specialtasks = specstring.split(';')
+                    reqData = {}
+                    for req in specialtasks:
+                        reqArray = paramreq.split(" ")
+                        reqType = reqArray[0]
+                        reqArgs = reqArray[1:]
+                        reqData[reqType] = getattr(self.devicecomm,reqType)(*reqArgs)
+                    
+                    self.sendStatusUpdate(reqData, taskType)
+                except Exception as e:
+                    print 'Error in processing special task',e
             else:
                 print "Task not recognized: (" + task + ")"
                 print "taskType: ("+taskType+")"

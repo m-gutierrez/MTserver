@@ -22,8 +22,14 @@ import errno
 import string
 import argparse
 import struct
+import os.path
+import json
+import traceback
+
 
 DEBUG = False
+DICT_FILE = "devices_dict"
+
 
 """
 The Server class is the main entry point of the backend, it listens
@@ -35,23 +41,35 @@ the Worker thread is implicitly thread safe.
 """
 class Server:
     def __init__(self, workerName, port):
-        self.debug = DEBUG
-        
-        #Get the IP address of host computer
-        self.hostname = socket.gethostname()
-        self.host = socket.gethostbyname(self.hostname) 
-        self.port = port 
+        try:
+            self.debug = DEBUG
+            
+            #Get the IP address of host computer
+            self.hostname = socket.gethostname()
+            self.host = socket.gethostbyname(self.hostname)
+            self.port = port
+            
+            if port == 12345: # default port, look for the device file
+                if os.path.isfile(DICT_FILE):
+                    self.devices = json.load(open(DICT_FILE))
+                    keylist=self.devices.keys()
+                    if workerName in keylist:
+                        self.port = int(string.split(self.devices[workerName],":")[1])
+                        print "Using port %d from device file" %(self.port)
 
-        self.server = None
-        self.threads = []
-        
-        self.worker = Worker(self,string.split(workerName,'Worker')[0])
-        self.workerName = workerName
+            self.server = None
+            self.threads = []
+            
+            self.worker = Worker(self,string.split(workerName,'Worker')[0])
+            self.workerName = workerName
 
-        # self.f = file("messageLog.txt", "w")
+            # self.f = file("messageLog.txt", "w")
 
-        self.deadThreads = []
-        self.serverLock = threading.Lock()
+            self.deadThreads = []
+            self.serverLock = threading.Lock()
+        except Exception as e:
+            print "Error: %s" %(str(e))
+            print traceback.format_exc()
 
     def openSocket(self):
         try:

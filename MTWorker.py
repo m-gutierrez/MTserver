@@ -21,7 +21,7 @@ import Queue
 import copy
 import time
 import errno
-
+import os
 DEBUG = False
 
 
@@ -45,8 +45,12 @@ necessary data fields. The access will be thread-safe
 as long as all the methods are only called from the 
 default ones and not directly by the server.
 """
+
+
+
 class Worker(threading.Thread):
     def __init__(self, server,workerName):
+
         threading.Thread.__init__(self)
         
         self.server = server
@@ -55,8 +59,8 @@ class Worker(threading.Thread):
         self.quitting = 0
 
         ### Device specific setup and data ###
-        import importlib        
-        self.devicecomm = importlib.import_module('%sComm'%(workerName)).Comm()
+        import importlib 
+        self.devicecomm = importlib.import_module('DeviceWorkers.%sComm'%(workerName)).Comm()
         self.availablecommands = dir(self.devicecomm)
         
         self.DEFAULT_UPDATE_INTERVAL = 1 # in sec

@@ -25,12 +25,18 @@ import struct
 import os.path
 import json
 import traceback
-
+import os
 
 DEBUG = False
-DICT_FILE = "devices_dict"
 
-
+try:
+    DICT_FILE = os.environ['DEV_DICT']
+    print 'Loading device dictionary : %s'%DICT_FILE
+except Exception as e:
+    print "no global DICT_FILE defined..."
+    print 'Is DeviceWorkers installed?...'
+    print 'Searching current directory for [devices_dict]...'
+    DICT_FILE = "devices_dict"
 """
 The Server class is the main entry point of the backend, it listens
 for client connections at a particular port and spawns a ClientThread
@@ -59,7 +65,7 @@ class Server:
 
             self.server = None
             self.threads = []
-            
+            print 'The worker name is : %s'%(workerName)
             self.worker = Worker(self,string.split(workerName,'Worker')[0])
             self.workerName = workerName
 
@@ -168,22 +174,32 @@ class Server:
 
                 elif s == sys.stdin:
                     text = sys.stdin.readline().rstrip().upper()
+                    try:
+                        if text == 'HELP':
+                            print "The available commands are: \n\tHELP \n\tSTATUS \n\tDEVICESTATUS \n\tKILL"
+                        elif text == 'STATUS':
+                            print "Server running on ip: %s port: %s"%(self.host,str(self.port))
+                            print "Current number of connected clients: " + str(len(self.threads))
+                            for i in self.threads:
+                                print '\tClient: %s @%s:%i\n'%(socket.gethostbyaddr(i.address[0])[0],i.address[0],i.address[1])
+                        elif text == 'DEVICESTATUS':
+                            print "Current Device state: "
+                            self.worker.acceptTask('PUPDATE')
+                        elif 'CMD' in text:
+                            cmd = text.split('CMD ')[1]
+                            print 'Processing command %s \n'%cmd
+                            self.worker.acceptTask(cmd)
+                        elif text == "":
+                            print ''
+                        elif text == 'KILL':
+                            running = 0
+                        else:
+                            print "Command not recognized, enter HELP to see the list of available commands."
+                    except Exception as e:
+                        print 'terminal cmd error: \n',e
+                        pass
 
-                    if text == 'HELP':
-                        print "The available commands are: \n\tHELP \n\tSTATUS \n\tDEVICESTATUS \n\tKILL"
-                    elif text == 'STATUS':
-                        print "Server running on ip: %s port: %s"%(self.host,str(self.port))
-                        print "Current number of connected clients: " + str(len(self.threads))
-                        for i in self.threads:
-                            print '\tClient: %s @%s:%i\n'%(socket.gethostbyaddr(i.address[0])[0],i.address[0],i.address[1])
-                    elif text == 'DEVICESTATUS':
-                        print "Current Device state: "
-                        self.worker.acceptTask('PUPDATE')
-                    elif text == 'KILL':
-                        running = 0
-
-                    else:
-                        print "Command not recognized, enter HELP to see the list of available commands."
+                    
 
         # Shut down all sockets
         print "Shutting down..."

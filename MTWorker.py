@@ -22,6 +22,7 @@ import copy
 import time
 import errno
 import os
+import traceback
 DEBUG = False
 
 
@@ -84,6 +85,9 @@ class Worker(threading.Thread):
     # Each message is assumed to be of the form:
     # <TYPE> <ARG1> <ARG2> ...
     def processTask(self,task):
+        task = task.rstrip()
+        if len(task) <= 3:
+            return
         taskArray = task.split(" ")
         taskType = taskArray[0]
         taskArgs = taskArray[1:]
@@ -101,7 +105,7 @@ class Worker(threading.Thread):
                     self.updater.changeTimeInterval(float(taskArgs[0]))
                 except Exception as e:
                     print 'Error when changing update interval: ', e
-                   
+                    print traceback.format_exc()
             elif taskType == 'PUPDATE':
                 print "STATUS " + str(time.time()) + " "+str(self.devicecomm.internal_state)
             elif taskType.startswith("PLOT"): #plots have unique IDs embedded in header
@@ -124,12 +128,14 @@ class Worker(threading.Thread):
                     self.sendStatusUpdate(reqData, taskType)
                 except Exception as e:
                     print 'Error in processing special task',e
+                    print traceback.format_exc()
             else:
                 print "Task not recognized: (" + task + ")"
                 print "taskType: ("+taskType+")"
                 print "Available commands (%s)"%(str(self.availablecommands))
         except Exception as e:
             print 'Failed in processTask: ',e
+            print traceback.format_exc()
 
     # Encodes the UPDATE message to be distributed to the clients
     # This can be a readout from the device or any other kind of 
@@ -184,12 +190,13 @@ class Updater(threading.Thread):
     # a period of time set in self.timeInterval (in seconds)
     def run(self):
         while self.running == 1:
-            if not self.changeTimeQueue.empty():
-                self.timeInterval = self.changeTimeQueue.get()
-                self.changeTimeQueue.task_done()
-
-            self.worker.acceptTask("UPDATE")
-            time.sleep(self.timeInterval)
+            if self.timeInterval > 1: # if interval is large, we still want to respond to external updates
+                for i in range(0,self.timeInterval):
+                    if not self.changeTimeQueue.empty():
+                        self.timeInterval = self.changeTimeQueue.get()
+                        self.changeTimeQueue.task_done()
+                    time.sleep(1)
+                self.worker.acceptTask("UPDATE")
 
     # Places a request to change the time interval in the
     # changeTimeQueue. This request will be processed at the

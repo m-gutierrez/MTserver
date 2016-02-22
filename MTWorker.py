@@ -191,12 +191,19 @@ class Updater(threading.Thread):
     def run(self):
         while self.running == 1:
             if self.timeInterval > 1: # if interval is large, we still want to respond to external updates
-                for i in range(0,self.timeInterval):
+                for i in range(int(self.timeInterval)):
                     if not self.changeTimeQueue.empty():
                         self.timeInterval = self.changeTimeQueue.get()
                         self.changeTimeQueue.task_done()
+                        if self.timeInterval < i+1:
+                            break
                     time.sleep(1)
-                self.worker.acceptTask("UPDATE")
+            else:
+                time.sleep(self.timeInterval)
+                if not self.changeTimeQueue.empty():
+                    self.timeInterval = self.changeTimeQueue.get()
+                    self.changeTimeQueue.task_done()
+            self.worker.acceptTask("UPDATE")
 
     # Places a request to change the time interval in the
     # changeTimeQueue. This request will be processed at the

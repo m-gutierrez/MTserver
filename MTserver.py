@@ -173,7 +173,7 @@ class Server:
                     self.serverLock.release()
 
                 elif s == sys.stdin:
-                    text = sys.stdin.readline().rstrip().upper()
+                    text = sys.stdin.readline().rstrip()
                     try:
                         if text == 'HELP':
                             print "The available commands are: \n\tHELP \n\tSTATUS \n\tDEVICESTATUS \n\tKILL"

@@ -61,7 +61,7 @@ class Worker(threading.Thread):
 
         ### Device specific setup and data ###
         import importlib 
-        self.devicecomm = importlib.import_module('DeviceWorkers.%sComm'%(workerName)).Comm()
+        self.devicecomm = importlib.import_module('DeviceWorkers.twins.%sComm'%(workerName)).Comm()
         self.availablecommands = dir(self.devicecomm)
         
         self.DEFAULT_UPDATE_INTERVAL = 1 # in sec
@@ -91,7 +91,7 @@ class Worker(threading.Thread):
         taskArray = task.split(" ")
         taskType = taskArray[0]
         taskArgs = taskArray[1:]
-
+        if DEBUG: print taskType,taskArgs
         try:
             if taskType in self.availablecommands or taskType == "":
                 #Check if task is available in comm class
@@ -107,7 +107,9 @@ class Worker(threading.Thread):
                     print 'Error when changing update interval: ', e
                     print traceback.format_exc()
             elif taskType == 'PUPDATE':
-                print "STATUS " + str(time.time()) + " "+str(self.devicecomm.internal_state)
+                print "STATUS " + str(time.time()) 
+                for key in self.devicecomm.internal_state:
+                    print '%s : %s'%(key,str(self.devicecomm.internal_state[key]))
             elif taskType.startswith("PLOT"): #plots have unique IDs embedded in header
                 self.devicecomm.UPDATE()
                 self.sendStatusUpdate(self.devicecomm.internal_state, taskType)

@@ -26,6 +26,10 @@ import os.path
 import json
 import traceback
 import os
+import readline
+import rlcompleter
+
+readline.parse_and_bind('tab: complete')
 
 DEBUG = False
 
